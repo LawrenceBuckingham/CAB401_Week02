@@ -46,9 +46,11 @@ int main()
 
     auto start_time = omp_get_wtime();
 
-    for(int i = 0;i< N;i++)
-        for(int j = 0;j < N;j++)
-            A[i][j] = A[i][j] + B[i][j];
+#define OP A[i][j] = A[i][j-1] + B[i][j]
+
+    for(int i = 0; i< N; i++)
+        for(int j = 1; j < N; j++)
+            OP;
 
     auto end_time = omp_get_wtime();
     Copy(A, GroundTruth);
@@ -60,8 +62,8 @@ int main()
 
 #pragma omp parallel for
     for (int i = 0; i < N; i++)
-        for (int j = 0; j < N; j++)
-            A[i][j] = A[i][j] + B[i][j];
+        for (int j = 1; j < N; j++)
+            OP;
 
     auto outer_end_time = omp_get_wtime();
 
@@ -73,12 +75,12 @@ int main()
 
     for (int i = 0; i < N; i++) {
 #pragma omp parallel for
-        for (int j = 0; j < N; j++) {
-            A[i][j] = A[i][j] + B[i][j];
+        for (int j = 1; j < N; j++) {
+            OP;
         }
     }
 
     auto inner_end_time = omp_get_wtime();
-    printf("Parallel outer time = %0.17f\n", (outer_end_time - outer_start_time));
+    printf("Parallel inner time = %0.17f\n", (outer_end_time - outer_start_time));
     Check(A, GroundTruth);
 }
