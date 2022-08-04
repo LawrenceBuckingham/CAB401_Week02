@@ -46,9 +46,9 @@ int main()
 
     auto start_time = omp_get_wtime();
 
-#define OUTER for(int i = 1; i< N; i++)
-#define INNER    for(int j = 1; j < N; j++)
-#define OP          A[i][j] = A[i-1][j] + A[i][j-1]
+#define OUTER for(int i = 0; i< N; i++)
+#define INNER    for(int j = 0; j < N; j++)
+#define OP          A[i][j] = A[i][0] + B[i][j]
 
     OUTER
         INNER
