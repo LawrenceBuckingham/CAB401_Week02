@@ -46,10 +46,12 @@ int main()
 
     auto start_time = omp_get_wtime();
 
-#define OP A[i][j] = A[i][j-1] + B[i][j]
+#define OUTER for(int i = 1; i< N; i++)
+#define INNER    for(int j = 0; j < N; j++)
+#define OP          A[i][j] = A[i-i][j] + B[i][j]
 
-    for(int i = 0; i< N; i++)
-        for(int j = 1; j < N; j++)
+    OUTER
+        INNER
             OP;
 
     auto end_time = omp_get_wtime();
@@ -61,8 +63,8 @@ int main()
     auto outer_start_time = omp_get_wtime();
 
 #pragma omp parallel for
-    for (int i = 0; i < N; i++)
-        for (int j = 1; j < N; j++)
+    OUTER
+        INNER
             OP;
 
     auto outer_end_time = omp_get_wtime();
@@ -73,9 +75,9 @@ int main()
     Copy(A_Orig, A);
     auto inner_start_time = omp_get_wtime();
 
-    for (int i = 0; i < N; i++) {
+    OUTER {
 #pragma omp parallel for
-        for (int j = 1; j < N; j++) {
+        INNER {
             OP;
         }
     }
