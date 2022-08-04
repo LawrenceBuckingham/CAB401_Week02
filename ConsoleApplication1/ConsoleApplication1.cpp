@@ -4,89 +4,43 @@
 #include <cstdlib>
 #include <omp.h>
 
-#define N 2000
-
-double A[N][N], B[N][N], A_Orig[N][N], GroundTruth[N][N];
-
-void Populate(double x[N][N]) {
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			x[i][j] = 100.0 * rand() / RAND_MAX;
-		}
-	}
-}
-
-void Copy(double src[N][N], double dest[N][N]) {
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			dest[i][j] = src[i][j];
-		}
-	}
-}
-
-void Check(double src[N][N], double dest[N][N]) {
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			if (dest[i][j] != src[i][j]) {
-				printf("Error detected at (%d,%d)\n", i, j);
-				return;
-			}
-		}
-	}
-}
+#define N 1000000000
 
 int main()
 {
-	srand(12);
 
-	Populate(A);
-	Copy(A, A_Orig);
+    long long total = 0;
 
-	Populate(B);
+    auto start_time = omp_get_wtime();
+    for (int i = 0; i <= N; i++) {
+        total += i;
+    }
+    auto end_time = omp_get_wtime();
 
-	auto start_time = omp_get_wtime();
+    printf("total = %lld\n", total);
+    printf("Sequential time = %0.17f\n", (end_time - start_time));
 
-#define OUTER for(int i = 0; i< N; i++)
-#define INNER    for(int j = 1; j < N; j++)
-#define OP          A[i][j] = A[i][0] + B[i][j]
+    long long par_total = 0;
 
-	OUTER {
-		INNER {
-			OP;
-		}
-	}
+    auto par_start_time = omp_get_wtime();
 
-	auto end_time = omp_get_wtime();
-	Copy(A, GroundTruth);
+#pragma omp parallel
+    {
+        long long sub_total = 0; // each thread gets a personal copy of the subtot
 
-	printf("Sequential time = %0.17f\n", (end_time - start_time));
+#pragma omp for
+        for (int i = 0; i <= N; i++) { // Each thread does _part_ of the for loop
+            sub_total += i;
+        }
 
-	Copy(A_Orig, A);
-	auto outer_start_time = omp_get_wtime();
+#pragma omp critical
+        { // We force threads to politely take turns
+            par_total += sub_total;
+        }
+    }
+    auto par_end_time = omp_get_wtime();
 
-#pragma omp parallel for
-	OUTER{
-		INNER {
-			OP;
-		}
-	}
+    printf("Parallel total = %lld\n", par_total);
+    printf("Parallel time = %0.17f\n", (par_end_time - par_start_time));
 
-	auto outer_end_time = omp_get_wtime();
-
-	printf("Parallel outer time = %0.17f\n", (outer_end_time - outer_start_time));
-	Check(A, GroundTruth);
-
-	Copy(A_Orig, A);
-	auto inner_start_time = omp_get_wtime();
-
-	OUTER{
-#pragma omp parallel for
-		INNER {
-			OP;
-		}
-	}
-
-	auto inner_end_time = omp_get_wtime();
-	printf("Parallel inner time = %0.17f\n", (outer_end_time - outer_start_time));
-	Check(A, GroundTruth);
 }
