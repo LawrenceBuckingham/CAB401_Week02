@@ -51,7 +51,6 @@ int main()
 #define OP          A[i][j] = A[i][0] + B[i][j]
 
 	OUTER {
-		A[i][0] = A[i][0] + B[i][0];
 		INNER {
 			OP;
 		}
@@ -67,7 +66,6 @@ int main()
 
 #pragma omp parallel for
 	OUTER{
-		A[i][0] = A[i][0] + B[i][0];
 		INNER {
 			OP;
 		}
@@ -82,7 +80,6 @@ int main()
 	auto inner_start_time = omp_get_wtime();
 
 	OUTER{
-		A[i][0] = A[i][0] + B[i][0];
 #pragma omp parallel for
 		INNER {
 			OP;
