@@ -9,7 +9,7 @@
 double A[N][N], B[N][N], A_Orig[N][N], GroundTruth[N][N];
 
 void Populate(double x[N][N]) {
-    for (int i = 0; i < N; i++ ) {
+    for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             x[i][j] = 100.0 * rand() / RAND_MAX;
         }
@@ -17,7 +17,7 @@ void Populate(double x[N][N]) {
 }
 
 void Copy(double src[N][N], double dest[N][N]) {
-    for (int i = 0; i < N; i++ ) {
+    for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             dest[i][j] = src[i][j];
         }
@@ -25,7 +25,7 @@ void Copy(double src[N][N], double dest[N][N]) {
 }
 
 void Check(double src[N][N], double dest[N][N]) {
-    for (int i = 0; i < N; i++ ) {
+    for (int i = 0; i < N; i++) {
         for (int j = 0; j < N; j++) {
             if (dest[i][j] != src[i][j]) {
                 printf("Error detected at (%d,%d)\n", i, j);
@@ -47,12 +47,12 @@ int main()
     auto start_time = omp_get_wtime();
 
 #define OUTER for(int i = 1; i< N; i++)
-#define INNER    for(int j = 0; j < N; j++)
-#define OP          A[i][j] = A[i-i][j] + B[i][j]
+#define INNER    for(int j = i; j < N; j++)
+#define OP          A[i][j] = A[i-1][j] + B[i][j]
 
     OUTER
         INNER
-            OP;
+        OP;
 
     auto end_time = omp_get_wtime();
     Copy(A, GroundTruth);
@@ -65,7 +65,7 @@ int main()
 #pragma omp parallel for
     OUTER
         INNER
-            OP;
+        OP;
 
     auto outer_end_time = omp_get_wtime();
 
@@ -75,7 +75,7 @@ int main()
     Copy(A_Orig, A);
     auto inner_start_time = omp_get_wtime();
 
-    OUTER {
+    OUTER{
 #pragma omp parallel for
         INNER {
             OP;
