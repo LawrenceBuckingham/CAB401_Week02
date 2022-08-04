@@ -31,9 +31,6 @@ int main()
     auto par_start_time = omp_get_wtime();
 
 #pragma omp parallel for
-    // thread 1 processes i = 0 .. N/8
-    // thread 2 processes i = N/8 + 1 .. 2N/8 
-    // thread 3 processes i = N/8 + 1 .. 2N/8 
     for (int i = 0; i <= N; i++) {
         auto reg = par_total;
         reg = reg + i;
